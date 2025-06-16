@@ -1,0 +1,161 @@
+﻿REGION,Country
+EU_BALTIC,Estonia
+EU_BALTIC,Latvia
+EU_BALTIC,Lithuania
+EU_CENTRALEAST,Bulgaria
+EU_CENTRALEAST, Czech Republic
+EU_CENTRALEAST, Hungary
+EU_CENTRALEAST, Poland
+EU_CENTRALEAST, Romania
+EU_CENTRALEAST, Slovakia
+EU_CENTRALEAST, Slovenia
+EU_MIDWEST,Austria
+EU_MIDWEST, Belgium
+EU_MIDWEST, Germany
+EU_MIDWEST, France
+EU_MIDWEST, Luxembourg
+EU_MIDWEST, Netherlands
+EU_NORTH,Denmark
+EU_NORTH, Finland
+EU_NORTH, Ireland
+EU_NORTH, Sweden
+EU_NORTH, United Kingdom
+EU_SOUTH,Cyprus
+EU_SOUTH, Greece
+EU_SOUTH, Italy
+EU_SOUTH, Malta
+EU_SOUTH, Portugal
+EU_SOUTH, Spain
+RCEU,Albania
+RCEU, Bosnia and Herzegovina
+RCEU, Croatia
+RCEU, Macedonia
+RCEU, Serbia-Montenegro
+ROWE,Gibraltar
+ROWE, Iceland
+ROWE, Norway
+ROWE, Switzerland
+RUSSIAREG,Russian Federation
+UKRAINEREG,Ukraine
+FORMER_USSR,Armenia
+FORMER_USSR, Azerbaijan
+FORMER_USSR, Belarus
+FORMER_USSR, Georgia
+FORMER_USSR, Kazakhstan
+FORMER_USSR, Kyrgyzstan
+FORMER_USSR, Moldova
+FORMER_USSR, Tajikistan
+FORMER_USSR, Turkmenistan
+FORMER_USSR, Uzbekistan
+AUSTRALIAREG,Australia
+NEWZEALANDREG,New Zealand
+PACIFIC_ISLANDS,Fiji Islands
+PACIFIC_ISLANDS, Kiribati
+PACIFIC_ISLANDS, Papua New Guinea
+PACIFIC_ISLANDS, Samoa
+PACIFIC_ISLANDS, Solomon Islands
+PACIFIC_ISLANDS, Tonga
+PACIFIC_ISLANDS, Vanuatu
+CANADAREG,Canada
+USAREG,United States of America
+ARGENTINAREG,Argentina
+BRAZILREG,Brazil
+MEXICOREG,Mexico
+RCAM,Bahamas
+RCAM, Barbados
+RCAM, Belize
+RCAM, Bermuda
+RCAM, Costa Rica
+RCAM, Cuba
+RCAM, Dominica
+RCAM, Dominican Republic
+RCAM, El Salvador
+RCAM, Grenada
+RCAM, Guatemala
+RCAM, Haiti
+RCAM, Honduras
+RCAM, Jamaica
+RCAM, Nicaragua
+RCAM, Netherland Antilles
+RCAM, Panama
+RCAM, St Lucia
+RCAM, St Vincent
+RCAM, Trinidad and Tobago
+RSAM,Bolivia
+RSAM, Chile
+RSAM, Colombia
+RSAM, Ecuador
+RSAM, Guyana
+RSAM, Paraguay
+RSAM, Peru
+RSAM, Suriname
+RSAM, Uruguay
+RSAM, Venezuela
+CHINAREG,China
+JAPANREG,Japan
+SOUTHKOREA,South Korea
+INDONESIAREG,Indonesia
+MALAYSIAREG,Malaysia
+RSEA_OPA,Brunei Daressalaam
+RSEA_OPA, Singapore
+RSEA_OPA, Myanmar
+RSEA_OPA, Philippines
+RSEA_OPA, Thailand
+RSEA_PAC,Cambodia
+RSEA_PAC, Korea DPR
+RSEA_PAC, Laos
+RSEA_PAC, Mongolia
+RSEA_PAC, Viet Nam
+INDIAREG,India
+RSAS,Afghanistan
+RSAS, Bangladesh
+RSAS, Bhutan
+RSAS, Maldives
+RSAS, Nepal
+RSAS, Pakistan
+RSAS, Sri Lanka
+MIDDLEEAST,Bahrain
+MIDDLEEAST, Iran
+MIDDLEEAST, Iraq
+MIDDLEEAST, Israel
+MIDDLEEAST, Jordan
+MIDDLEEAST, Kuwait
+MIDDLEEAST, Lebanon
+MIDDLEEAST, Oman
+MIDDLEEAST, Qatar
+MIDDLEEAST, Saudi Arabia
+MIDDLEEAST, Syria
+MIDDLEEAST, United Arab Emirates
+MIDDLEEAST, Yemen
+NORTHERNAF,Algeria
+NORTHERNAF, Egypt
+NORTHERNAF, Libya
+NORTHERNAF, Morocco
+NORTHERNAF, Tunisia
+NORTHERNAF, West Sahara
+TURKEYREG,Turkey
+CONGOBASIN,Cameroon
+CONGOBASIN, Central African Republic
+CONGOBASIN, Congo Republic
+CONGOBASIN, Democratic Republic of Congo
+CONGOBASIN, Equatorial Guinea
+CONGOBASIN, Gabon
+EASTERNAF,Burundi
+EASTERNAF, Ethiopia
+EASTERNAF, Kenya
+EASTERNAF, Rwanda
+EASTERNAF, Tanzania
+EASTERNAF, Uganda
+SOUTHAFRREG,South Africa
+SOUTHERNAF,Angola
+SOUTHERNAF, Botswana
+SOUTHERNAF, Comoros
+SOUTHERNAF, Lesotho
+SOUTHERNAF, Madagascar
+SOUTHERNAF, Malawi
+SOUTHERNAF, Mauritius
+SOUTHERNAF, Mozambique
+SOUTHERNAF, Namibia
+SOUTHERNAF, Swaziland
+SOUTHERNAF, Zambia
+SOUTHERNAF, Zimbabwe

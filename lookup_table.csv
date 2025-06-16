@@ -1,0 +1,18 @@
+﻿FISHSPEC,FISHSYST,Organism,System,Origin
+FRSH ,CATCH,fish,fisheries,freshwater
+SALM ,CATCH,medium-pelagic,fisheries,marine
+MARN,CATCH,medium-pelagic,fisheries,marine
+CEPH,CATCH,medium-pelagic,fisheries,marine
+CRST,CATCH,benthic,fisheries,marine
+DMRS,CATCH,demersal,fisheries,marine
+PELG,CATCH,fofm,fisheries,marine
+SHRI,CATCH,benthic,fisheries,marine
+TUNA,CATCH,large-pelagic,fisheries,marine
+MLSC,CATCH,benthic,fisheries,marine
+MLSC,AQUA_M,bivalve,aquaculture,marine
+SALM,AQUA_M,salmon,aquaculture,marine
+TUNA,AQUA_M,tuna,aquaculture,marine
+PELG,AQUA_M,marine-fish-general,aquaculture,marine
+DMRS,AQUA_M,marine-fish-general,aquaculture,marine
+SHRI,AQUA_M,shrimp,aquaculture,marine
+CRST,AQUA_M,crustaceans,aquaculture,marine
