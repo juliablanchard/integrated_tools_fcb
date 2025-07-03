@@ -1,5 +1,8 @@
 ### Step 1.  READ in halpern et al. 2022 data tables
 # country and food specific pressures
+
+pressure_per_tonne<-read.csv("pressure_per_tonne_data.csv")
+  
 pressures<-read.csv("halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
 #check all groups
 pressures<-read.csv("halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
