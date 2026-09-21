@@ -5,7 +5,7 @@ library(tidyverse)
 # country and food specific pressures per tonne of production
 
 pressure_per_tonne<-read.csv("pressure_per_tonne_data.csv")
-  
+ 
 ### Step 2. match and aggregate country data into GLOBIOM regions
 
 #get long country names to match iso3c
@@ -71,27 +71,17 @@ scen<- scenarios |> mutate(projected_production_tonnes=OUTPUT,total_pressure=OUT
   group_by(pressure,YEAR,ALLSCEN3) |>
   summarise(Total_projected_pressure=sum(total_pressure,na.rm=T))
 
-# scenarios_bau<-subset(scenarios,ALLSCEN3=="SCEN_DIET0_CULTURE0_CAPTURE0")
-# scenarios_blue<-subset(scenarios,ALLSCEN3=="SCEN_DIET+10_CULTURE+50_CAPTURE+10")
-# scenarios_yellow<-subset(scenarios,ALLSCEN3=="SCEN_DIET-10_CULTURE0_CAPTURE-10")
-# 
-# scenarios_blue$BAU_OUTPUT<-scenarios_bau$OUTPUT
-# scenarios_yellow$BAU_OUTPUT<-scenarios_bau$OUTPUT
-# 
-# scenarios_blue$relCPI<-(scenarios_blue$Total_projected_cumpressure-scenarios_bau$Total_projected_cumpressure)/scenarios_bau$Total_projected_cumpressure
-# scenarios_yellow$relCPI<-(scenarios_green$Total_projected_cumpressure-scenarios_bau$Total_projected_cumpressure)/scenarios_bau$Total_projected_cumpressure
-#scen<-rbind(scenarios_blue,scenarios_green)
+
 scen$method<-"integrated"
 
 
-
+##integrated pressures including marine food pressures for 3 core scenarios; 
 scen_2050<- scen |> filter(YEAR== "2050" & !is.na(pressure))
 p<-ggplot(scen_2050,aes(x=YEAR,y=Total_projected_pressure,fill=ALLSCEN3)) + geom_col(position = position_dodge(0.8), width = 0.7) + facet_wrap(~pressure,scales = "free_y")
 p 
 
 
-
-
+## integrated pressures no marine food pressures for 3 core scenarios;
 land<-c("CROP","ANIMAL")
 scenarios_nomarine<-filter(scenarios,SYST%in%land)
 scen_nomarine<- scenarios_nomarine |> mutate(projected_production_tonnes=OUTPUT,total_pressure=OUTPUT*pressure_per_tonne) |>
@@ -105,7 +95,12 @@ scen_nomarine$method<-"no_marine"
 p2<-ggplot(scen_nomarine_2050,aes(x=YEAR,y=Total_projected_pressure,fill=ALLSCEN3)) + geom_col(position = position_dodge(0.8), width = 0.7) + facet_wrap(~pressure,scales="free_y")
 p2
 
-### 
+### p1 +p2
+library(ggplot2)
+library(ggpubr)
+ggarrange(p,p2,ncol=2,common.legend = T,legend="bottom")
+
+
 
 #relative to 2020 BAU
 scen_2020<- scen |> filter(YEAR== "2020" & !is.na(pressure) & ALLSCEN3=="SCEN_DIET0_CULTURE0_CAPTURE0")

@@ -1,11 +1,11 @@
 ### Step 1.  READ in halpern et al. 2022 data tables
 # country and food specific pressures
 
-pressure_per_tonne<-read.csv("pressure_per_tonne_data.csv")
+pressure_per_tonne<-read.csv("data/pressure_per_tonne_data.csv")
   
-pressures<-read.csv("halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
+pressures<-read.csv("data/halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
 #check all groups
-pressures<-read.csv("halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
+pressures<-read.csv("data/halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 1).csv")
 unique(pressures$Organism)
 # [1] "bana"                "barl"                "buffaloes"           "cass"                "chickens"            "cnut"               
 # [7] "coco"                "cows"                "goats"               "maiz"                "ocer"                "oilp"               
@@ -28,11 +28,13 @@ unique(aqua_m$Organism)
 # [1] "bivalve"             "crustaceans"         "marine-fish-general" "salmon"             
 # [5] "shrimp"              "tuna" 
 
+#marine pressures
 mpressures<-subset(pressures, Origin =="marine") 
 mpressures$Organism<-as.factor(mpressures$Organism)
-# country and food specific production
 
-production<-read.csv("halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 3).csv")
+
+# country and food specific production
+production<-read.csv("data/halpern_etal_natsust_2022_41893_2022_965_MOESM2_ESM(Supplementary Data 3).csv")
 unique(production$Product)
 # subset marine products
 #marine_products<-c("Benthic","Demersal","Forage fish", "Large-pelagic", "Medium-pelagic","Reef","Small-pelagic","Salmon","Marine-fish-general","Bivalve","Shrimp","Tuna", "Crustaceans")
