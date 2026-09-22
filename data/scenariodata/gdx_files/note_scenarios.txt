@@ -1,0 +1,78 @@
+* David: Jul 21st extract of the SCEN_MAP from the 6_scenario.gms file, corresponding to runs 3945
+*        The ones you are interested in are primarily in nsim:
+*        > 20-22 (core scenarios)
+*        > 23-26 (sensitivity of BAU to CLEVER's AF20, AFCOMPO20, AFCOMPOCROPMIX and SUSFISH) 
+*        > 27-33 (sensitivity of Barriers and Blue transformation to CLEVER's AF20, AFCOMPO20 and AFCOMPOCROPMIX)
+*        The rest is the CLEVER D7.3 runs (0-19), and a test of the above scenarios in which non-fed acquaculture is not capped (as assumed in CLEVER)
+SET
+SCEN_MAP(AllScenLOOP,ALLSCEN1,ALLSCEN2,ALLSCEN3)
+/
+* CLEVER T6.2 scenarios
+0   . SSP2 . SPA0 . Scen_CLEAQU_bau
+1   . SSP2 . SPA0 . Scen_CLEAQU_2020All
+2   . SSP2 . SPA0 . Scen_CLEAQU_crop
+3   . SSP2 . SPA0 . Scen_CLEAQU_aqcomp20All
+4   . SSP2 . SPA0 . Scen_CLEAQU_af20All
+5   . SSP2 . SPA0 . Scen_CLEAQU_recomp20All
+6   . SSP2 . SPA0 . Scen_CLEAQU_PMCatchDouble
+7   . SSP2 . SPA0 . Scen_CLEAQU_PMCatchp10
+8   . SSP2 . SPA0 . Scen_CLEAQU_PMCatchm20
+9   . SSP2 . SPA0 . Scen_CLEAQU_aqcomp20AllANDPMCatchDouble
+10  . SSP2 . SPA0 . Scen_CLEAQU_aqcomp20AllANDPMCatchp10
+11  . SSP2 . SPA0 . Scen_CLEAQU_aqcomp20AllANDPMCatchm20
+12  . SSP2 . SPA0 . Scen_CLEAQU_af20AllANDPMCatchDouble
+13  . SSP2 . SPA0 . Scen_CLEAQU_af20AllANDPMCatchp10
+14  . SSP2 . SPA0 . Scen_CLEAQU_af20AllANDPMCatchm20
+15  . SSP2 . SPA0 . Scen_CLEAQU_bauLowCropMix
+16  . SSP2 . SPA0 . Scen_CLEAQU_aqcomp20AllLowCropMix
+17  . SSP2 . SPA0 . Scen_CLEAQU_NoNFACExp
+18  . SSP2 . SPA0 . Scen_CLEAQU_BFDietShift
+19  . SSP2 . SPA0 . Scen_CLEAQU_Elleby2025Coarse
+* END CLEVER T6.2 scenarios
+* DL - Scott's paper v4
+*      Corresponds to Scott's paper revision 1
+* > Closer to original (CLEVER setup except for FCAP for non-fed aquaculture, which is similar to what happens in Scen_CLEAQU_NoNFACExp)
+*        . Core scenarios
+*          Same as Scen_DIET0_CULTURE0_CAPTURE0
+20  . SSP2 . SPA0 . Scen_ScottBAU_core_FCAP0
+*          Same as Scen_DIET-10_CULTURE0_CAPTURE-10
+21  . SSP2 . SPA0 . Scen_ScottBarriers_core_FCAP0
+*          Same as Scen_DIET+10_CULTURE+50_CAPTURE+10
+22  . SSP2 . SPA0 . Scen_ScottBlueTrans_core_FCAP0
+*        . SA: AF20, AFCOMPO20, SUSFISH and AFCOMPOCROPMIX
+23  . SSP2 . SPA0 . Scen_ScottBAU_SAAF20_FCAP0
+24  . SSP2 . SPA0 . Scen_ScottBAU_SAAFCOMPO20_FCAP0
+25  . SSP2 . SPA0 . Scen_ScottBAU_SAAFCOMPOCROPMIX_FCAP0
+26  . SSP2 . SPA0 . Scen_ScottBAU_SASUSFISH_FCAP0
+27  . SSP2 . SPA0 . Scen_ScottBarriers_SAAF20_FCAP0
+28  . SSP2 . SPA0 . Scen_ScottBarriers_SAAFCOMPO20_FCAP0
+29  . SSP2 . SPA0 . Scen_ScottBarriers_SAAFCOMPOCROPMIX_FCAP0
+*30  . SSP2 . SPA0 . Scen_ScottBarriers_SASUSFISH_FCAP0
+31  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAF20_FCAP0
+32  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAFCOMPO20_FCAP0
+33  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAFCOMPOCROPMIX_FCAP0
+*34  . SSP2 . SPA0 . Scen_ScottBlueTrans_SASUSFISH_FCAP0
+* > Closer to CLEVER (FCAP for non-fed exp aligns on other CLEVER scenarios than Scen_CLEAQU_NoNFACExp)
+*        . Core scenarios
+*          Same as Scen_DIET0_CULTURE0_CAPTURE0
+35  . SSP2 . SPA0 . Scen_ScottBAU_core_FCAPBAU
+*          Same as Scen_DIET-10_CULTURE0_CAPTURE-10
+36  . SSP2 . SPA0 . Scen_ScottBarriers_core_FCAPBAU
+*          Same as Scen_DIET+10_CULTURE+50_CAPTURE+10
+37  . SSP2 . SPA0 . Scen_ScottBlueTrans_core_FCAPBAU
+*        . SA: AF20, AFCOMPO20, SUSFISH and AFCOMPOCROPMIX
+38  . SSP2 . SPA0 . Scen_ScottBAU_SAAF20_FCAPBAU
+39  . SSP2 . SPA0 . Scen_ScottBAU_SAAFCOMPO20_FCAPBAU
+40  . SSP2 . SPA0 . Scen_ScottBAU_SAAFCOMPOCROPMIX_FCAPBAU
+41  . SSP2 . SPA0 . Scen_ScottBAU_SASUSFISH_FCAPBAU
+42  . SSP2 . SPA0 . Scen_ScottBarriers_SAAF20_FCAPBAU
+43  . SSP2 . SPA0 . Scen_ScottBarriers_SAAFCOMPO20_FCAPBAU
+44  . SSP2 . SPA0 . Scen_ScottBarriers_SAAFCOMPOCROPMIX_FCAPBAU
+*45  . SSP2 . SPA0 . Scen_ScottBarriers_SASUSFISH_FCAPBAU
+46  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAF20_FCAPBAU
+47  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAFCOMPO20_FCAPBAU
+48  . SSP2 . SPA0 . Scen_ScottBlueTrans_SAAFCOMPOCROPMIX_FCAPBAU
+*49  . SSP2 . SPA0 . Scen_ScottBlueTrans_SASUSFISH_FCAPBAU
+* END DL - Scott's paper v4'
+/
+;
