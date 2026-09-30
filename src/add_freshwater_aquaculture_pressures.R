@@ -91,22 +91,58 @@ add_freshwater_aquaculture_pressures <- function(pressure_per_tonne,
 
   # Production weights are required for any blend. GLOBIOM's FRSH item does not
   # resolve tilapia vs carp vs catfish, and an unweighted mean would treat them
-  # as equally important. Source: FAO FishStatJ aquaculture production for the
-  # modelled regions.
-  weights <- g |>
-    dplyr::distinct(taxa, prod_weight) |>
-    dplyr::filter(!is.na(prod_weight))
-  if (nrow(weights) == 0) {
+  # as equally important.
+  #
+  # REGIONAL weights are strongly preferred over global ones. The freshwater
+  # species mix varies enormously between GLOBIOM regions -- China is carp
+  # dominated, Egypt (NORTHERNAF) tilapia dominated, Viet Nam (RSEA_OPA)
+  # pangasius dominated -- and a single global blend would impose China's mix on
+  # every region. Supply an optional REGION column in the weights file to get
+  # region-specific blends; rows with REGION = "" or NA are used as the fallback
+  # for any region not otherwise covered.
+  #
+  # Source: FAO FishStatJ, Global Aquaculture Production, species-level tonnes
+  # aggregated to the four taxa groups and to GLOBIOM regions.
+  wt_all <- g |> dplyr::filter(!is.na(prod_weight))
+  if (nrow(wt_all) == 0) {
     message("NOTE: prod_weight is empty in ", file,
             " - freshwater aquaculture contributes ZERO pressure. ",
-            "Supply FAO production shares per taxon to enable the blend.")
+            "Supply FAO production shares per taxon (optionally per REGION) ",
+            "to enable the blend.")
     return(pressure_per_tonne)
   }
-  weights <- data.frame(taxa = weights$taxa,
-                        w = weights$prod_weight / sum(weights$prod_weight),
-                        stringsAsFactors = FALSE)
 
-  blend <- function(df, value_col) {
+  has_region <- "REGION" %in% names(wt_all) &&
+    any(!is.na(wt_all$REGION) & nzchar(trimws(wt_all$REGION)))
+  if (!has_region) wt_all$REGION <- NA_character_
+
+  wt_all <- wt_all |>
+    dplyr::mutate(REGION = ifelse(is.na(REGION) | !nzchar(trimws(REGION)),
+                                  NA_character_, toupper(trimws(REGION)))) |>
+    dplyr::distinct(REGION, taxa, prod_weight)
+
+  wt_global <- wt_all |> dplyr::filter(is.na(REGION))
+  if (nrow(wt_global) == 0) {
+    stop("Weights in ", file, " are region-specific only, with no fallback rows. ",
+         "Add rows with an empty REGION so regions without their own mix are covered.")
+  }
+
+  # normalise within each weight set
+  norm <- function(d) dplyr::mutate(d, w = prod_weight / sum(prod_weight))
+  wt_global <- norm(wt_global)[, c("taxa", "w")]
+  wt_region <- wt_all |> dplyr::filter(!is.na(REGION)) |>
+    dplyr::group_by(REGION) |> norm() |> dplyr::ungroup()
+
+  if (has_region) {
+    message("Region-specific freshwater species mixes supplied for: ",
+            paste(sort(unique(wt_region$REGION)), collapse = ", "),
+            ". All other regions use the global fallback.")
+  } else {
+    message("Using a single GLOBAL freshwater species mix for all regions. ",
+            "Region-specific weights would be more accurate - see script header.")
+  }
+
+  blend <- function(df, value_col, weights) {
     df |>
       dplyr::select(taxa, pressure, val = dplyr::all_of(value_col)) |>
       dplyr::inner_join(weights, by = "taxa") |>
@@ -114,20 +150,11 @@ add_freshwater_aquaculture_pressures <- function(pressure_per_tonne,
       dplyr::summarise(v = sum(val * w) / sum(w), .groups = "drop")
   }
 
-  out <- list()
-
-  # --- disturbance: Halpern's pond method on Gephart's empirical areas --------
-  # Yield_m2_per_t is per tonne LIVE weight, so no edible conversion.
-  # ON-FARM ONLY - see the header. This is a lower bound for fed systems.
   gd <- g[g$pressure == "disturbance" & !is.na(g$value_per_t_edible), , drop = FALSE]
-  if (nrow(gd) > 0) {
-    b <- blend(gd, "value_per_t_edible")
-    out$disturbance <- b$v[b$pressure == "disturbance"] / 1e6 * infrastructure_uplift
-  }
-
-  # --- ghg / water / nutrient from the Gephart posteriors --------------------
   go <- g[g$pressure %in% c("ghg", "water", "N", "P"), , drop = FALSE]
-  if (all(is.na(go$value_per_t_edible))) {
+
+  posteriors_ready <- !all(is.na(go$value_per_t_edible))
+  if (!posteriors_ready) {
     message("NOTE: ghg/water/N/P are unpopulated in ", file,
             " - only disturbance will be added. Fill from Nature Source Data ",
             "for Fig 1 (Gephart et al. 2021) or the taxa-level posteriors.")
@@ -135,26 +162,49 @@ add_freshwater_aquaculture_pressures <- function(pressure_per_tonne,
     stop("Partially filled ", file, ": ", sum(is.na(go$value_per_t_edible)),
          " of ", nrow(go), " ghg/water/N/P values are NA. Fill all four for ",
          "every taxon, or remove the taxon.")
-  } else {
+  }
+  if (posteriors_ready) {
     go$per_t_live <- go$value_per_t_edible * (go$edible_pct / 100)
-    b <- blend(go, "per_t_live")
-    v <- stats::setNames(b$v, b$pressure)
-    out$ghg      <- v[["ghg"]] / 1000          # kgCO2e -> t CO2eq
-    out$water    <- v[["water"]]               # m3 -> m3
-    out$nutrient <- (v[["N"]] + v[["P"]]) / 1000  # kgNe + kgPe -> t (approx, see header)
   }
 
-  if (length(out) == 0) return(pressure_per_tonne)
+  # Blend once per weight set: the global fallback, plus any region-specific mix.
+  one_region <- function(weights) {
+    out <- list()
+    # disturbance: Halpern's pond method on Gephart's empirical areas.
+    # Yield_m2_per_t is already per tonne LIVE weight, so no edible conversion.
+    # ON-FARM ONLY - see header. Lower bound for fed systems.
+    if (nrow(gd) > 0) {
+      b <- blend(gd, "value_per_t_edible", weights)
+      out$disturbance <- b$v[b$pressure == "disturbance"] / 1e6 * infrastructure_uplift
+    }
+    if (posteriors_ready) {
+      b <- blend(go, "per_t_live", weights)
+      v <- stats::setNames(b$v, b$pressure)
+      out$ghg      <- v[["ghg"]] / 1000             # kgCO2e -> t CO2eq
+      out$water    <- v[["water"]]                  # m3 -> m3
+      out$nutrient <- (v[["N"]] + v[["P"]]) / 1000  # kgNe+kgPe -> t (approx, see header)
+    }
+    if (length(out) == 0) return(NULL)
+    data.frame(pressure = names(out),
+               pressure_per_tonne = unlist(out, use.names = FALSE),
+               stringsAsFactors = FALSE)
+  }
 
-  vals <- data.frame(pressure = names(out),
-                     pressure_per_tonne = unlist(out, use.names = FALSE),
-                     stringsAsFactors = FALSE)
+  default_vals <- one_region(wt_global)
+  if (is.null(default_vals)) return(pressure_per_tonne)
 
-  # Gephart taxa-level values are global, not country-resolved, so the same
-  # intensity is applied to every region. Regional differentiation would need
-  # the country-level posteriors, which are not public.
   regions <- unique(pressure_per_tonne$REGION)
-  new_rows <- tidyr::expand_grid(REGION = regions, vals) |>
+  new_rows <- tidyr::expand_grid(REGION = regions, default_vals)
+
+  # overwrite regions that have their own species mix
+  for (rg in intersect(unique(wt_region$REGION), regions)) {
+    rv <- one_region(wt_region[wt_region$REGION == rg, c("taxa", "w")])
+    if (is.null(rv)) next
+    new_rows <- new_rows |> dplyr::filter(REGION != rg) |>
+      dplyr::bind_rows(tidyr::expand_grid(REGION = rg, rv))
+  }
+
+  new_rows <- new_rows |>
     dplyr::mutate(ITEM = item, Organism = organism, SYST = "AQUA_F",
                   System = "aquaculture", n_countries = NA_integer_,
                   pressure_value = NA_real_, tonnes = NA_real_,
@@ -166,9 +216,9 @@ add_freshwater_aquaculture_pressures <- function(pressure_per_tonne,
   }
 
   message("Added freshwater aquaculture (", item, ") for [",
-          paste(names(out), collapse = ", "), "] across ", length(regions),
-          " regions.",
-          if ("disturbance" %in% names(out))
+          paste(unique(new_rows$pressure), collapse = ", "), "] across ",
+          length(regions), " regions.",
+          if ("disturbance" %in% new_rows$pressure)
             " Disturbance is ON-FARM ONLY and a lower bound - see script header." else "")
 
   dplyr::bind_rows(pressure_per_tonne, new_rows)
