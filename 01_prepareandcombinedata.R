@@ -67,6 +67,49 @@ lookup <- read.csv(
 # Previous note:
 # lookup <- subset(lookup, !is.na(REGION))
 
+# --- Join coverage check ------------------------------------------------------
+# The lookup joins to Halpern on `Organism`. The two files use different naming
+# conventions, and the filter(!is.na(ITEM)) below discards any failures silently.
+# Before the fix, that dropped ALL 7 AQUA_M items and ALL 10 ANIMAL items, so the
+# "integrated" (marine-inclusive) result contained no aquaculture and the
+# "no_marine" baseline contained no livestock. Fail loudly instead.
+#
+# EXPECTED unmatched, by design:
+#   FEED   (FSHM, FSHO)          - Halpern embeds feed pressures in the fed-animal
+#                                  per-tonne values (Halpern SI Fig. S1, S6), so
+#                                  giving fishmeal/oil their own rows double counts.
+#   CROP   (SUNF, RAPE_ML, SOY_ML) - no Organism assigned in the lookup.
+#   ANIMAL (all)                 - Halpern has one organism per animal (cows, pigs,
+#                                  chickens...) while the lookup splits meat/milk/
+#                                  eggs. This is a 1-to-many mapping that needs an
+#                                  allocation rule, NOT a rename. Unresolved.
+EXPECTED_UNMATCHED <- c("FEED", "CROP", "ANIMAL")
+
+lookup_cov <- lookup |>
+  dplyr::mutate(matched = trimws(Organism) %in% unique(pressure_per_tonne$Organism))
+
+unmatched <- lookup_cov |> dplyr::filter(!matched)
+
+if (nrow(unmatched) > 0) {
+  message("Lookup rows with no Halpern organism match (", nrow(unmatched), "):")
+  print(as.data.frame(unmatched[, c("ITEM", "SYST", "Organism")]))
+}
+
+bad <- unmatched |> dplyr::filter(!SYST %in% EXPECTED_UNMATCHED)
+if (nrow(bad) > 0) {
+  stop("Unexpected unmatched organisms in lookup_item_foodsystem.csv:\n",
+       paste0("  ", bad$ITEM, " (", bad$SYST, "): '", bad$Organism, "'",
+              collapse = "\n"),
+       "\nFix the Organism name to match pressure_per_tonne_data.csv, or add its ",
+       "SYST to EXPECTED_UNMATCHED with a documented reason.")
+}
+
+# Every aquatic item must carry a pressure estimate - this is the core of the
+# integrated (land + marine) calculation, so a silent drop invalidates the result.
+aquatic_missing <- unmatched |> dplyr::filter(SYST %in% c("CATCH", "AQUA_M"))
+stopifnot("aquatic items lost pressure data in the lookup join" =
+            nrow(aquatic_missing) == 0)
+
 pressure_per_tonne <- pressure_per_tonne |>
   left_join(lookup) |>
   filter(!is.na(ITEM))
