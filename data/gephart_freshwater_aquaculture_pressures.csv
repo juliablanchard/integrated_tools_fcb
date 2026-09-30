@@ -3,15 +3,19 @@ tilapia,ghg,NA,kgCO2e per t edible,NA,37.00,Gephart et al. 2021 Nature 597:360-3
 tilapia,water,NA,m3 per t edible,NA,37.00,Gephart et al. 2021 Fig.1e,
 tilapia,N,NA,kgNe per t edible,NA,37.00,Gephart et al. 2021 Fig.1b,
 tilapia,P,NA,kgPe per t edible,NA,37.00,Gephart et al. 2021 Fig.1c,
-oth_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,"Misc. carp group"
+tilapia,disturbance,792.000,m2 per t LIVE (on-farm pond area),NA,100,FishPrint LCI_compiled_for_SI.csv Yield_m2_per_t,median of 40 pond records; implies 12.6 t/ha
+oth_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,Misc. carp group
 oth_carp,water,NA,m3 per t edible,NA,54.00,Gephart et al. 2021 Fig.1e,
 oth_carp,N,NA,kgNe per t edible,NA,54.00,Gephart et al. 2021 Fig.1b,
 oth_carp,P,NA,kgPe per t edible,NA,54.00,Gephart et al. 2021 Fig.1c,
-hypoph_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,"Silver/bighead carp; highest water use of any farmed group"
-hypoph_carp,water,NA,m3 per t edible,NA,54.00,Gephart et al. 2021 Fig.1e,"2.6x other carps per the paper"
-hypoph_carp,N,NA,kgNe per t edible,NA,54.00,Gephart et al. 2021 Fig.1b,"Can be NEGATIVE for unfed/unfertilised systems (extractive)"
-hypoph_carp,P,NA,kgPe per t edible,NA,54.00,Gephart et al. 2021 Fig.1c,"Can be NEGATIVE"
-catfish,ghg,NA,kgCO2e per t edible,NA,53.05,Gephart et al. 2021 Fig.1a,"Includes Pangasius and Clarias"
+oth_carp,disturbance,1402.105,m2 per t LIVE (on-farm pond area),NA,100,FishPrint LCI_compiled_for_SI.csv Yield_m2_per_t,median of 19 pond records; wide spread q1 633 q3 34400
+hypoph_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,Silver/bighead carp; highest water use of any farmed group
+hypoph_carp,water,NA,m3 per t edible,NA,54.00,Gephart et al. 2021 Fig.1e,2.6x other carps per the paper
+hypoph_carp,N,NA,kgNe per t edible,NA,54.00,Gephart et al. 2021 Fig.1b,Can be NEGATIVE for unfed/unfertilised systems (extractive)
+hypoph_carp,P,NA,kgPe per t edible,NA,54.00,Gephart et al. 2021 Fig.1c,Can be NEGATIVE
+hypoph_carp,disturbance,438.000,m2 per t LIVE (on-farm pond area),NA,100,FishPrint LCI_compiled_for_SI.csv Yield_m2_per_t,median of 28 pond records; implies 22.8 t/ha
+catfish,ghg,NA,kgCO2e per t edible,NA,53.05,Gephart et al. 2021 Fig.1a,Includes Pangasius and Clarias
 catfish,water,NA,m3 per t edible,NA,53.05,Gephart et al. 2021 Fig.1e,
 catfish,N,NA,kgNe per t edible,NA,53.05,Gephart et al. 2021 Fig.1b,
 catfish,P,NA,kgPe per t edible,NA,53.05,Gephart et al. 2021 Fig.1c,
+catfish,disturbance,23.419,m2 per t LIVE (on-farm pond area),NA,100,FishPrint LCI_compiled_for_SI.csv Yield_m2_per_t,median of 49 pond records; intensive Pangasius implies 427 t/ha

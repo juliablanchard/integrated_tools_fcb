@@ -13,12 +13,40 @@
 # Zenodo 10.5281/zenodo.5338614) covers tilapia, carps and catfish with per-tonne
 # stressors on a comparable basis.
 #
-# SCOPE: GHG, water and nutrient ONLY.
-# Disturbance is deliberately NOT grafted. Halpern's disturbance is km2eq of
-# habitat displacement with a disruption weighting; Gephart's land is m2a of
-# terrestrial occupation. These are different quantities and there is no
-# defensible conversion. Freshwater aquaculture therefore remains absent from the
-# disturbance pressure, and that must be stated wherever disturbance is reported.
+# SCOPE: ghg, water, nutrient and disturbance.
+#
+# DISTURBANCE is handled differently from the other three, and comes with a
+# material caveat. Halpern SI 5.1.4: "For all categories of mariculture, except
+# the unfed and algae fed shellfish, we assume a disruption value of 1, which
+# means that natural habitats are fully replaced." For ponds specifically
+# (SI 5.1.4.3, shrimp) disturbance is pond surface area in km2, increased by 50%
+# "to account for farming infrastructure such as drainage canals, buildings, and
+# other facilities". So for a pond system, disturbance IS area:
+#
+#     disturbance_km2_per_t = on_farm_area_m2_per_t / 1e6 * 1.5
+#
+# We therefore apply HALPERN'S METHOD using GEPHART'S EMPIRICAL AREAS
+# (LCI_compiled_for_SI.csv, Yield_m2_per_t, freshwater pond records). We do NOT
+# import Gephart's own land-use metric, because Halpern's pond assumption for
+# shrimp (4,000 fry/ha at 30 shrimp/kg = 133 kg/ha) is 171x more extensive than
+# the median of Gephart's 136 freshwater pond observations (22.8 t/ha). Mixing
+# the two metrics would make freshwater aquaculture appear two orders of
+# magnitude less disturbing than the shrimp rows purely by choice of source.
+# Yield_m2_per_t is already per tonne LIVE weight, so no edible conversion.
+#
+# *** ON-FARM ONLY - READ BEFORE REPORTING DISTURBANCE ***
+# This yields the on-farm pond footprint and EXCLUDES the feed contribution.
+# For fed species that omission is large, not marginal: Halpern's own salmon
+# disturbance is 0.0457 km2/t, whereas the cage geometry in SI 5.1.4.1
+# (9,000 m3 at 10 m depth = 900 m2 holding 180 t) gives just 5e-06 km2/t --
+# cage area explains 1 part in 9,134. The remainder is the forage fishery
+# behind the feed (1.73 t forage fish/t salmon x 0.0357 km2/t = 0.062 km2/t,
+# the right order). Freshwater aquaculture is largely fed (60,304 of 84,267 kt
+# in BAU 2050), so FRSHF disturbance computed here is a LOWER BOUND and is not
+# comparable like-for-like with the marine aquaculture rows.
+# Adding the feed component would need aquafeed composition per tonne of fish
+# crossed with Halpern's crop disturbance intensities, and interacts with how
+# GLOBIOM crop production is already counted in this pipeline. Not done here.
 #
 # UNIT RECONCILIATION (verified against both papers)
 #   Halpern pressure_per_tonne units, per tonne of production:
@@ -44,76 +72,104 @@
 # using an unweighted mean, which would treat tilapia and carp as equally
 # important when carp production is several times larger.
 
+
 add_freshwater_aquaculture_pressures <- function(pressure_per_tonne,
                                                  data_path,
                                                  file = "gephart_freshwater_aquaculture_pressures.csv",
                                                  item = "FRSHF",
-                                                 organism = "freshwater-aquaculture") {
+                                                 organism = "freshwater-aquaculture",
+                                                 infrastructure_uplift = 1.5) {
 
   path <- file.path(data_path, file)
   if (!file.exists(path)) {
-    warning("Gephart freshwater file not found at ", path,
+    warning("Freshwater aquaculture file not found at ", path,
             " - freshwater aquaculture will contribute ZERO pressure.")
     return(pressure_per_tonne)
   }
 
   g <- utils::read.csv(path, stringsAsFactors = FALSE)
 
-  if (all(is.na(g$value_per_t_edible))) {
-    message("NOTE: ", file, " has no values yet. Freshwater aquaculture will ",
-            "contribute ZERO pressure - aquaculture water and nutrient results ",
-            "remain biased low. See the header of this script for how to fill it.")
+  # Production weights are required for any blend. GLOBIOM's FRSH item does not
+  # resolve tilapia vs carp vs catfish, and an unweighted mean would treat them
+  # as equally important. Source: FAO FishStatJ aquaculture production for the
+  # modelled regions.
+  weights <- g |>
+    dplyr::distinct(taxa, prod_weight) |>
+    dplyr::filter(!is.na(prod_weight))
+  if (nrow(weights) == 0) {
+    message("NOTE: prod_weight is empty in ", file,
+            " - freshwater aquaculture contributes ZERO pressure. ",
+            "Supply FAO production shares per taxon to enable the blend.")
     return(pressure_per_tonne)
   }
-  if (anyNA(g$value_per_t_edible)) {
-    stop("Partially filled ", file, ": ",
-         sum(is.na(g$value_per_t_edible)), " of ", nrow(g),
-         " values are NA. Fill all four pressures for every taxon, or remove the taxon.")
+  weights <- data.frame(taxa = weights$taxa,
+                        w = weights$prod_weight / sum(weights$prod_weight),
+                        stringsAsFactors = FALSE)
+
+  blend <- function(df, value_col) {
+    df |>
+      dplyr::select(taxa, pressure, val = dplyr::all_of(value_col)) |>
+      dplyr::inner_join(weights, by = "taxa") |>
+      dplyr::group_by(pressure) |>
+      dplyr::summarise(v = sum(val * w) / sum(w), .groups = "drop")
   }
-  if (anyNA(g$prod_weight)) {
-    stop("prod_weight is NA in ", file, ". Supply production shares for the taxa ",
-         "blend (see header) - an unweighted mean would misrepresent the mix.")
+
+  out <- list()
+
+  # --- disturbance: Halpern's pond method on Gephart's empirical areas --------
+  # Yield_m2_per_t is per tonne LIVE weight, so no edible conversion.
+  # ON-FARM ONLY - see the header. This is a lower bound for fed systems.
+  gd <- g[g$pressure == "disturbance" & !is.na(g$value_per_t_edible), , drop = FALSE]
+  if (nrow(gd) > 0) {
+    b <- blend(gd, "value_per_t_edible")
+    out$disturbance <- b$v[b$pressure == "disturbance"] / 1e6 * infrastructure_uplift
   }
 
-  # convert to live weight, then to Halpern units
-  g$per_t_live <- g$value_per_t_edible * (g$edible_pct / 100)
+  # --- ghg / water / nutrient from the Gephart posteriors --------------------
+  go <- g[g$pressure %in% c("ghg", "water", "N", "P"), , drop = FALSE]
+  if (all(is.na(go$value_per_t_edible))) {
+    message("NOTE: ghg/water/N/P are unpopulated in ", file,
+            " - only disturbance will be added. Fill from Nature Source Data ",
+            "for Fig 1 (Gephart et al. 2021) or the taxa-level posteriors.")
+  } else if (anyNA(go$value_per_t_edible)) {
+    stop("Partially filled ", file, ": ", sum(is.na(go$value_per_t_edible)),
+         " of ", nrow(go), " ghg/water/N/P values are NA. Fill all four for ",
+         "every taxon, or remove the taxon.")
+  } else {
+    go$per_t_live <- go$value_per_t_edible * (go$edible_pct / 100)
+    b <- blend(go, "per_t_live")
+    v <- stats::setNames(b$v, b$pressure)
+    out$ghg      <- v[["ghg"]] / 1000          # kgCO2e -> t CO2eq
+    out$water    <- v[["water"]]               # m3 -> m3
+    out$nutrient <- (v[["N"]] + v[["P"]]) / 1000  # kgNe + kgPe -> t (approx, see header)
+  }
 
-  w <- g |>
-    dplyr::distinct(taxa, prod_weight) |>
-    dplyr::mutate(prod_weight = prod_weight / sum(prod_weight))
+  if (length(out) == 0) return(pressure_per_tonne)
 
-  blend <- g |>
-    dplyr::select(taxa, pressure, per_t_live) |>
-    dplyr::left_join(w, by = "taxa") |>
-    dplyr::group_by(pressure) |>
-    dplyr::summarise(per_t_live = sum(per_t_live * prod_weight), .groups = "drop")
+  vals <- data.frame(pressure = names(out),
+                     pressure_per_tonne = unlist(out, use.names = FALSE),
+                     stringsAsFactors = FALSE)
 
-  gv <- stats::setNames(blend$per_t_live, blend$pressure)
-  out <- data.frame(
-    pressure = c("ghg", "water", "nutrient"),
-    pressure_per_tonne = c(gv[["ghg"]] / 1000,
-                           gv[["water"]],
-                           (gv[["N"]] + gv[["P"]]) / 1000),
-    stringsAsFactors = FALSE
-  )
-
-  # Applied to every region: Gephart taxa-level values are global, not
-  # country-resolved. Regional differentiation would need the country-level
-  # posteriors, which are not in the public repository.
+  # Gephart taxa-level values are global, not country-resolved, so the same
+  # intensity is applied to every region. Regional differentiation would need
+  # the country-level posteriors, which are not public.
   regions <- unique(pressure_per_tonne$REGION)
-  new_rows <- tidyr::expand_grid(REGION = regions, out) |>
+  new_rows <- tidyr::expand_grid(REGION = regions, vals) |>
     dplyr::mutate(ITEM = item, Organism = organism, SYST = "AQUA_F",
                   System = "aquaculture", n_countries = NA_integer_,
                   pressure_value = NA_real_, tonnes = NA_real_,
-                  SOURCE = "Gephart2021")
+                  SOURCE = ifelse(pressure == "disturbance",
+                                  "Halpern-method/FishPrint-yield", "Gephart2021"))
 
   if (!"SOURCE" %in% names(pressure_per_tonne)) {
     pressure_per_tonne$SOURCE <- "Halpern2022"
   }
 
-  message("Added freshwater aquaculture (", item, ") for ghg/water/nutrient across ",
-          length(regions), " regions from Gephart et al. 2021. ",
-          "Disturbance deliberately excluded - see script header.")
+  message("Added freshwater aquaculture (", item, ") for [",
+          paste(names(out), collapse = ", "), "] across ", length(regions),
+          " regions.",
+          if ("disturbance" %in% names(out))
+            " Disturbance is ON-FARM ONLY and a lower bound - see script header." else "")
 
   dplyr::bind_rows(pressure_per_tonne, new_rows)
 }
