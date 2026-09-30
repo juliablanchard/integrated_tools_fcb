@@ -1,5 +1,6 @@
 ITEM,SYST,Organism,System
 FRSHW,CATCH,freshwater-fish,fisheries
+FRSHF,AQUA_F,freshwater-aquaculture,aquaculture
 SALMW,CATCH,medium-pelagic,fisheries
 MARNW,CATCH,medium-pelagic,fisheries
 CEPHW,CATCH,medium-pelagic,fisheries

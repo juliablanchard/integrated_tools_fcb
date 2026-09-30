@@ -1,0 +1,17 @@
+taxa,pressure,value_per_t_edible,unit,prod_weight,edible_pct,source,notes
+tilapia,ghg,NA,kgCO2e per t edible,NA,37.00,Gephart et al. 2021 Nature 597:360-365 Fig.1a,Fill from Nature Source Data for Fig 1 or taxa-level posterior summaries
+tilapia,water,NA,m3 per t edible,NA,37.00,Gephart et al. 2021 Fig.1e,
+tilapia,N,NA,kgNe per t edible,NA,37.00,Gephart et al. 2021 Fig.1b,
+tilapia,P,NA,kgPe per t edible,NA,37.00,Gephart et al. 2021 Fig.1c,
+oth_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,"Misc. carp group"
+oth_carp,water,NA,m3 per t edible,NA,54.00,Gephart et al. 2021 Fig.1e,
+oth_carp,N,NA,kgNe per t edible,NA,54.00,Gephart et al. 2021 Fig.1b,
+oth_carp,P,NA,kgPe per t edible,NA,54.00,Gephart et al. 2021 Fig.1c,
+hypoph_carp,ghg,NA,kgCO2e per t edible,NA,54.00,Gephart et al. 2021 Fig.1a,"Silver/bighead carp; highest water use of any farmed group"
+hypoph_carp,water,NA,m3 per t edible,NA,54.00,Gephart et al. 2021 Fig.1e,"2.6x other carps per the paper"
+hypoph_carp,N,NA,kgNe per t edible,NA,54.00,Gephart et al. 2021 Fig.1b,"Can be NEGATIVE for unfed/unfertilised systems (extractive)"
+hypoph_carp,P,NA,kgPe per t edible,NA,54.00,Gephart et al. 2021 Fig.1c,"Can be NEGATIVE"
+catfish,ghg,NA,kgCO2e per t edible,NA,53.05,Gephart et al. 2021 Fig.1a,"Includes Pangasius and Clarias"
+catfish,water,NA,m3 per t edible,NA,53.05,Gephart et al. 2021 Fig.1e,
+catfish,N,NA,kgNe per t edible,NA,53.05,Gephart et al. 2021 Fig.1b,
+catfish,P,NA,kgPe per t edible,NA,53.05,Gephart et al. 2021 Fig.1c,

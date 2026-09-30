@@ -173,8 +173,13 @@ lookup <- read.csv(
 #                                  it alongside its components would double count
 #                                  milk. All other ANIMAL items now resolve via
 #                                  the livestock aggregation above.
+#   AQUA_F (FRSHF)               - freshwater aquaculture has NO Halpern organism:
+#                                  Halpern excludes it outright (SI p11). Its
+#                                  pressures are supplied separately from Gephart
+#                                  et al. 2021 in Step 3C, for ghg/water/nutrient
+#                                  only. Expected to be unmatched HERE.
 EXPECTED_UNMATCHED <- c("FEED", "CROP")
-EXPECTED_UNMATCHED_ITEMS <- c("ALMILK")
+EXPECTED_UNMATCHED_ITEMS <- c("ALMILK", "FRSHF")
 
 lookup_cov <- lookup |>
   dplyr::mutate(matched = trimws(Organism) %in% unique(pressure_per_tonne$Organism))
@@ -239,6 +244,24 @@ stopifnot("REGION x ITEM x pressure is not unique after aggregation" =
 message("Regional intensities: ", nrow(pressure_per_tonne), " rows, ",
         dplyr::n_distinct(pressure_per_tonne$REGION), " regions, median ",
         stats::median(pressure_per_tonne$n_countries), " countries per cell.")
+
+### Step 3C. Freshwater aquaculture pressures (Gephart et al. 2021) ------------
+# Halpern excludes freshwater aquaculture entirely (SI p11), yet it is 70.7% of
+# modelled aquaculture production in run 3945. Grafts ghg/water/nutrient from
+# Gephart et al. 2021; disturbance is deliberately NOT grafted (km2eq of habitat
+# displacement is not the same quantity as m2a of land occupation).
+# No-ops with a message if the data file has not been populated yet.
+source("src/add_freshwater_aquaculture_pressures.R")
+pressure_per_tonne <- add_freshwater_aquaculture_pressures(
+  pressure_per_tonne, data_path = data_path)
+
+# Keep the provenance visible downstream: any figure mixing sources should say so.
+if (!"SOURCE" %in% names(pressure_per_tonne)) {
+  pressure_per_tonne$SOURCE <- "Halpern2022"
+}
+message("Pressure rows by source: ",
+        paste(names(table(pressure_per_tonne$SOURCE)),
+              table(pressure_per_tonne$SOURCE), sep = "=", collapse = ", "))
 
 # Maybe needs more cleaning.
 ##STEP 3B. check if the matching is clean
