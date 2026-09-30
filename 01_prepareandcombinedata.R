@@ -60,6 +60,47 @@ pressure_per_tonne |>
 
 pressure_per_tonne$Organism <- pressure_per_tonne$organism
 
+# --- Livestock aggregation and co-product allocation --------------------------
+# GLOBIOM livestock items are broader than Halpern organisms:
+#   BVMEAT / BVMILK  = bovine         -> Halpern 'cows'  + 'buffaloes'
+#   SGMEAT / SGMILK  = small ruminant -> Halpern 'sheep' + 'goats'
+# The old lookup mapped SGMEAT to BOTH 'sheep_meat' and 'goats_meat', which
+# produced two pressure rows per SGMEAT x country x pressure and double counted
+# on the join. Aggregate the Halpern organisms into GLOBIOM-compatible groups
+# instead, summing pressure_value and tonnes and re-dividing so the blend is
+# PRODUCTION-WEIGHTED. Averaging pressure_per_tonne directly would be unweighted
+# and wrong.
+#
+# CO-PRODUCT ALLOCATION: Halpern's `tonnes` denominator is the sum of an animal's
+# co-products, verified against FAO 2017 -- cows 752.1 Mt vs meat 68 + milk 683;
+# sheep 22.1 vs 9.5 + 10.6; goats 25.9 vs 6.0 + 18.7; buffaloes 121.0 vs 4 + 120.
+# So pressure_per_tonne is ALREADY a mass-allocated intensity across co-products.
+# Applying it to each co-product and summing therefore reproduces the correct
+# animal-level total. This is mass allocation, inherited from Halpern; it does
+# NOT differentiate beef from milk per tonne. Switching to economic or protein
+# allocation would need co-product price/protein factors this dataset lacks.
+LIVESTOCK_GROUPS <- c(cows = "bovine", buffaloes = "bovine",
+                      sheep = "smallruminants", goats = "smallruminants",
+                      pigs = "pigs", chickens = "chickens")
+
+livestock_agg <- pressure_per_tonne |>
+  dplyr::filter(Organism %in% names(LIVESTOCK_GROUPS)) |>
+  dplyr::mutate(Organism = unname(LIVESTOCK_GROUPS[Organism])) |>
+  dplyr::group_by(iso3c, Organism, pressure) |>
+  dplyr::summarise(pressure_value = sum(pressure_value, na.rm = TRUE),
+                   tonnes         = sum(tonnes, na.rm = TRUE),
+                   .groups = "drop") |>
+  dplyr::mutate(pressure_per_tonne = pressure_value / tonnes) |>
+  dplyr::filter(is.finite(pressure_per_tonne))
+
+pressure_per_tonne <- dplyr::bind_rows(
+  pressure_per_tonne |> dplyr::filter(!Organism %in% names(LIVESTOCK_GROUPS)),
+  livestock_agg
+)
+
+message("Livestock aggregated into ", dplyr::n_distinct(livestock_agg$Organism),
+        " groups across ", dplyr::n_distinct(livestock_agg$iso3c), " countries.")
+
 lookup <- read.csv(
   paste0(data_path, "lookup_item_foodsystem.csv")
 )
@@ -79,11 +120,12 @@ lookup <- read.csv(
 #                                  per-tonne values (Halpern SI Fig. S1, S6), so
 #                                  giving fishmeal/oil their own rows double counts.
 #   CROP   (SUNF, RAPE_ML, SOY_ML) - no Organism assigned in the lookup.
-#   ANIMAL (all)                 - Halpern has one organism per animal (cows, pigs,
-#                                  chickens...) while the lookup splits meat/milk/
-#                                  eggs. This is a 1-to-many mapping that needs an
-#                                  allocation rule, NOT a rename. Unresolved.
-EXPECTED_UNMATCHED <- c("FEED", "CROP", "ANIMAL")
+#   ANIMAL (ALMILK only)         - ALMILK = BVMILK + SGMILK exactly, so including
+#                                  it alongside its components would double count
+#                                  milk. All other ANIMAL items now resolve via
+#                                  the livestock aggregation above.
+EXPECTED_UNMATCHED <- c("FEED", "CROP")
+EXPECTED_UNMATCHED_ITEMS <- c("ALMILK")
 
 lookup_cov <- lookup |>
   dplyr::mutate(matched = trimws(Organism) %in% unique(pressure_per_tonne$Organism))
@@ -95,7 +137,8 @@ if (nrow(unmatched) > 0) {
   print(as.data.frame(unmatched[, c("ITEM", "SYST", "Organism")]))
 }
 
-bad <- unmatched |> dplyr::filter(!SYST %in% EXPECTED_UNMATCHED)
+bad <- unmatched |>
+  dplyr::filter(!SYST %in% EXPECTED_UNMATCHED, !ITEM %in% EXPECTED_UNMATCHED_ITEMS)
 if (nrow(bad) > 0) {
   stop("Unexpected unmatched organisms in lookup_item_foodsystem.csv:\n",
        paste0("  ", bad$ITEM, " (", bad$SYST, "): '", bad$Organism, "'",
